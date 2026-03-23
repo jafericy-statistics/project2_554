@@ -36,7 +36,7 @@ class SparkDataCheck:
         )
         return cls(df)
 
-@classmethod
+    @classmethod
     def from_pandas(cls, spark, pdf: pd.DataFrame):
         """
         Instance of the class from a standard pandas DF.
@@ -64,3 +64,25 @@ class SparkDataCheck:
 
     def _is_string_type(self, col: str) -> bool:
         return self._get_dtype_dict().get(col) == "string"
+
+    def count_levels(self, col1: str, col2: str = None):
+            """
+            Return counts for one or two string columns as a pandas DF.
+            """
+            if not self._is_string_type(col1):
+                print(f"Column '{col1}' is numeric or not string.")
+                return None
+    
+            if col2 is not None and not self._is_string_type(col2):
+                print(f"Column '{col2}' is numeric or not string.")
+                return None
+    
+            if col2 is None:
+                result = (
+                    self.df.groupBy(self._safe_col(col1).alias(col1))
+                    .count()
+                    .toPandas()
+                )
+                return result.sort_values(col1).reset_index(drop=True)
+
+            return result.sort_values([col1, col2]).reset_index(drop=True)
