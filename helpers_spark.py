@@ -38,3 +38,34 @@ class SparkDataCheck:
             header=True
         )
         return cls(df)
+
+@classmethod
+    def from_pandas(cls, spark, pdf: pd.DataFrame):
+        """
+        Instance of the class from a standard pandas DF.
+        """
+        df = spark.createDataFrame(pdf)
+        return cls(df)
+
+    def _get_dtype_dict(self):
+        return dict(self.df.dtypes)
+
+    def _safe_col(self, col: str):
+        """
+        Reference a Spark column, including names with special characters and others.
+        """
+        return F.col(f"`{col}`")
+
+    def _is_numeric_type(self, col: str) -> bool:
+        dtype = self._get_dtype_dict().get(col)
+        if dtype is None:
+            return False
+
+        numeric_prefixes = (
+            "int", "bigint", "smallint", "tinyint",
+            "float", "double", "long", "decimal"
+        )
+        return any(dtype.startswith(prefix) for prefix in numeric_prefixes)
+
+    def _is_string_type(self, col: str) -> bool:
+        return self._get_dtype_dict().get(col) == "string"
