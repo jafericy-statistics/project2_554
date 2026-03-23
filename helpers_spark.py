@@ -86,3 +86,27 @@ class SparkDataCheck:
                 return result.sort_values(col1).reset_index(drop=True)
 
             return result.sort_values([col1, col2]).reset_index(drop=True)
+
+     def check_missing(self, col: str, new_col: str = None):
+        if new_col is None:
+            new_col = f"{col}_is_missing"
+
+        self.df = self.df.withColumn(new_col, self._safe_col(col).isNull())
+        return self
+
+     def check_string_levels(self, col: str, levels, new_col: str = None):
+
+        if not self._is_string_type(col):
+            print(f"Column '{col}' is not string. No changes made.")
+            return self
+
+        if new_col is None:
+            new_col = f"{col}_valid_level"
+
+        safe = self._safe_col(col)
+
+        self.df = self.df.withColumn(
+            new_col,
+            F.when(safe.isNull(), F.lit(None)).otherwise(safe.isin(levels))
+        )
+        return self
