@@ -63,7 +63,7 @@ class SparkDataCheck:
         return any(dtype.startswith(prefix) for prefix in numeric_prefixes)
 
     def _is_string_type(self, col: str) -> bool:
-        return self._get_dtype_dict().get(col) == "string"
+        return self._get_dtype_dict().get(col) == str
 
     def count_levels(self, col1: str, col2: str = None):
             """
